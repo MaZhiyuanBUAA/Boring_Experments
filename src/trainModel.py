@@ -11,22 +11,11 @@ Project: https://github.com/aymericdamien/TensorFlow-Examples/
 
 import tensorflow as tf
 import numpy as np
+from texi import loadData
 #load data
-trainSize = 10*1000
-data_x = np.fromfile('../data/data_x.bin',dtype=np.float64)
-data_y = np.fromfile('../data/data_y.bin',dtype=np.float64)
-data_x = np.reshape(data_x,[-1,7])
-#data_x[:,0:6] = np.round(data_x[:,0:6]/10,0)
-#data_x[:,6] = np.round(data_x[:,6]/120,0)
-print data_x[0:10,:]
-#print data_x.shape
-data_y = np.reshape(data_y,[-1,2])
-#print data_y[0:10,:]
-trainX = data_x[0:trainSize,:]
-trainY = data_y[0:trainSize,:]
-testX = data_x[trainSize:,:]
-#print testX.shape
-testY = data_y[trainSize:,:]
+
+
+trainX,trainY,testX,testY = loadData()
 #print testY.shape
 #print testY
 # Parameters

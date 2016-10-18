@@ -35,6 +35,7 @@ def miniDist(texis,passengers):
 def bigramDist(texis,passengers):
     tmp_texi = copy.deepcopy(texis)
     distance = 0
+    time_cost = 0
     for i,ele1 in enumerate(passengers):
         ele1_v = np.array(tmp_texi.shape[0]*[ele1[0:2]])
         tds1 = np.linalg.norm(ele1_v-tmp_texi,axis=1)
@@ -67,7 +68,8 @@ def bigramDist(texis,passengers):
         else:
             distance += tds1[ind1]
             tmp_texi = np.delete(tmp_texi,ind1,axis=0)
-    return distance
+        time_cost += ele2[2] - ele1[2]
+    return distance,time_cost
 
 def arg2min(a):
     if not isinstance(a,np.ndarray):
@@ -79,7 +81,7 @@ def arg2min(a):
         if ind1 > ind2:
             ind2 += 1
         return ind1,ind2
-def buildSet(texis,passengers):
+def buildSetforOneDay(texis,passengers):
     data = []#(X,Y):((x1,y1,x2,y2,xp,yp,t),(0,1))
     tmp_texi = copy.deepcopy(texis)
     for i in range(len(passengers)-1):
@@ -106,25 +108,42 @@ def buildSet(texis,passengers):
             data.append((np.hstack((tmp_texi[ind11],tmp_texi[ind12],ele1)),np.array([1.,0.])))
             tmp_texi = np.delete(tmp_texi,ind11,axis=0)
     return data
+def loadData():
+    trainSize = 10*1000
+    data_x = np.fromfile('../data/data_x.bin',dtype=np.float64)
+    data_y = np.fromfile('../data/data_y.bin',dtype=np.float64)
+    data_x = np.reshape(data_x,[-1,7])
+    #data_x[:,0:6] = np.round(data_x[:,0:6]/10,0)
+    #data_x[:,6] = np.round(data_x[:,6]/120,0)
+    #print data_x.shape
+    data_y = np.reshape(data_y,[-1,2])
+    #print data_y[0:10,:]
+    trainX = data_x[0:trainSize,:]
+    trainY = data_y[0:trainSize,:]
+    testX = data_x[trainSize:,:]
+    #print testX.shape
+    testY = data_y[trainSize:,:]
+    return (trainX,trainY,testX,testY)
 #a test
 #texis,passengers = generateTexisPassengers(seed=1)
 #print miniDist(texis, passengers)
 #print bigramDist(texis, passengers)
 
 #10 days'data for training,1 day's for testing
-seedTrain = range(11)
-dataSet = []
-for ele in seedTrain:
-    print ele
-    texis,passengers = generateTexisPassengers(seed=ele)
-    dataSet += buildSet(texis, passengers)
-data_x,data_y = [],[]
-#data_x:11*1000x7
-#data_y:11*1000x2
-for ele in dataSet:
-    data_x.append(ele[0])
-    data_y.append(ele[1])
-data_x = np.array(data_x)
-data_y = np.array(data_y)
-data_x.tofile('../data/data_x.bin')
-data_y.tofile('../data/data_y.bin')
+def buildSet(days):
+    seedTrain = range(days)
+    dataSet = []
+    for ele in seedTrain:
+        print ele
+        texis,passengers = generateTexisPassengers(seed=ele)
+        dataSet += buildSetforOneDay(texis, passengers)
+    data_x,data_y = [],[]
+    #data_x:11*1000x7
+    #data_y:11*1000x2
+    for ele in dataSet:
+        data_x.append(ele[0])
+        data_y.append(ele[1])
+    data_x = np.array(data_x)
+    data_y = np.array(data_y)
+    data_x.tofile('../data/data_x.bin')
+    data_y.tofile('../data/data_y.bin')
